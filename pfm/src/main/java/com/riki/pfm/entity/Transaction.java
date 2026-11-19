@@ -34,15 +34,19 @@ public class Transaction {
     TransactionType type,
     String description,
     LocalDate transactionDate
-) {
+    ) {
     this.amount = amount;
     this.type = type;
     this.description = description;
     this.transactionDate = transactionDate;
-}
+    }
 
     public Long getId() {
-    return id;
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public BigDecimal getAmount() {
@@ -51,7 +55,7 @@ public class Transaction {
 
     public TransactionType getType() {
     return type;
-}
+    }
 
 
     public String getDescription() {
@@ -68,7 +72,7 @@ public class Transaction {
 
     public void setType(TransactionType type) {
     this.type = type;
-}
+    }
 
     public void setDescription(String description) {
         this.description = description;
@@ -78,4 +82,15 @@ public class Transaction {
         this.transactionDate = transactionDate;
     }
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }

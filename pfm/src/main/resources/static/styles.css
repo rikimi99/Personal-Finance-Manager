@@ -1,3 +1,8 @@
+/* Component display rules (e.g. .auth-screen, .table-footer) must not override the hidden attribute. */
+[hidden] {
+    display: none !important;
+}
+
 @charset "UTF-8";
 
 :root {
@@ -1633,5 +1638,114 @@ h1 em {
         animation-duration: .01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: .01ms !important;
+    }
+}
+
+.auth-screen {
+    display: grid;
+    min-height: 100vh;
+    place-items: center;
+    padding: 28px;
+}
+
+.auth-card {
+    width: min(100%, 420px);
+    padding: 38px;
+    border: 1px solid rgba(38, 59, 52, .08);
+    border-radius: 15px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+}
+
+.auth-brand {
+    margin-bottom: 36px;
+    color: var(--forest);
+}
+
+.auth-card .eyebrow {
+    margin: 0 0 12px;
+}
+
+.auth-card h1 {
+    margin: 0;
+    font-family: var(--serif);
+    font-size: clamp(32px, 8vw, 42px);
+    font-weight: 400;
+    letter-spacing: -.05em;
+}
+
+.auth-copy {
+    margin: 10px 0 25px;
+    color: #78847b;
+    font-size: 13px;
+}
+
+.auth-card .form-field {
+    margin-bottom: 17px;
+}
+
+.auth-card .form-field > span:first-child {
+    color: var(--ink-soft);
+    font-size: 11px;
+}
+
+.auth-card .form-field input {
+    min-height: 46px;
+    font-size: 13px;
+}
+
+.auth-submit {
+    width: 100%;
+    min-height: 46px;
+    margin-top: 5px;
+}
+
+.auth-message {
+    margin: 4px 0 13px;
+    color: var(--sage-dark);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.auth-message.is-error {
+    color: #a44f3b;
+}
+
+.auth-switch {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin: 22px 0 0;
+    color: #78847b;
+    font-size: 12px;
+}
+
+.auth-switch-button {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--forest);
+    font-size: inherit;
+    font-weight: 700;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.signed-in-email {
+    max-width: 180px;
+    overflow: hidden;
+    color: #808b82;
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+    .auth-card {
+        padding: 28px 22px;
+    }
+
+    .signed-in-email {
+        display: none;
     }
 }

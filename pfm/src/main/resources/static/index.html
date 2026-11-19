@@ -9,7 +9,41 @@
     <script type="module" src="app.js"></script>
 </head>
 <body>
-<div class="app-shell">
+<main class="auth-screen" id="auth-screen">
+    <section class="auth-card" aria-labelledby="auth-title">
+        <a class="brand auth-brand" href="/" aria-label="Ledger home">
+            <span class="brand-mark" aria-hidden="true">
+                <svg viewBox="0 0 40 40" fill="none">
+                    <path d="M8 11.5h15.5a8.5 8.5 0 1 1 0 17H8v-17Z" stroke="currentColor" stroke-width="2.2"/>
+                    <path d="M8 20h15.5M14 11.5v17" stroke="currentColor" stroke-width="2.2"/>
+                    <circle cx="27" cy="20" r="2.2" fill="currentColor"/>
+                </svg>
+            </span>
+            <span class="brand-name">ledger<span class="brand-period">.</span></span>
+        </a>
+        <p class="eyebrow"><span class="eyebrow-mark"></span> YOUR PERSONAL LEDGER</p>
+        <h1 id="auth-title">Welcome back<span class="heading-period">.</span></h1>
+        <p class="auth-copy" id="auth-copy">Sign in to see your finances.</p>
+        <form id="auth-form">
+            <label class="form-field" for="auth-email">
+                <span>Email</span>
+                <input id="auth-email" name="email" type="email" autocomplete="username" maxlength="254" required>
+            </label>
+            <label class="form-field" for="auth-password">
+                <span>Password</span>
+                <input id="auth-password" name="password" type="password" autocomplete="current-password" required>
+            </label>
+            <p class="auth-message" id="auth-message" role="alert" hidden></p>
+            <button class="button button-primary auth-submit" id="auth-submit" type="submit">Sign in</button>
+        </form>
+        <p class="auth-switch">
+            <span id="auth-switch-prompt">New to Ledger?</span>
+            <button class="auth-switch-button" id="auth-switch-button" type="button">Create an account</button>
+        </p>
+    </section>
+</main>
+
+<div class="app-shell" id="app-shell" hidden>
     <aside class="sidebar">
         <a class="brand" href="#overview" aria-label="Ledger home">
             <span class="brand-mark" aria-hidden="true">
@@ -24,13 +58,9 @@
 
         <p class="sidebar-label">YOUR SPACE</p>
         <nav class="side-nav" aria-label="Main navigation">
-            <a class="nav-link is-active" href="#overview">
+            <a class="nav-link is-active" href="#overview" aria-current="location">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg>
                 <span>Overview</span>
-            </a>
-            <a class="nav-link" href="#activity">
-                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5h10M7 9.5h10M7 14.5h6M5 3.5h14a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-15a1 1 0 0 1 1-1Z"/></svg>
-                <span>Transactions</span>
             </a>
         </nav>
 
@@ -52,6 +82,8 @@
             <div class="breadcrumb"><span>YOUR FINANCES</span><span class="breadcrumb-slash">/</span><span>OVERVIEW</span></div>
             <div class="topbar-actions">
                 <time class="today-label" id="today-label"></time>
+                <span class="signed-in-email" id="signed-in-email"></span>
+                <button class="button button-quiet" id="logout-button" type="button">Sign out</button>
                 <button class="button button-primary" id="add-transaction-button" type="button">
                     <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg>
                     <span>New transaction</span>

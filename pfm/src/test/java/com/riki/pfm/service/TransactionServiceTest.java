@@ -5,6 +5,8 @@ import com.riki.pfm.entity.Transaction;
 import com.riki.pfm.enums.TransactionType;
 import com.riki.pfm.exception.TransactionNotFoundException;
 import com.riki.pfm.repository.TransactionRepository;
+import com.riki.pfm.repository.UserRepository;
+import com.riki.pfm.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -35,17 +37,23 @@ class TransactionServiceTest {
     @Mock
     private TransactionRepository transactionRepository;
 
+    @Mock
+    private UserRepository userRepository;
+
     @InjectMocks
     private TransactionService transactionService;
 
     @Test
     void addTransaction_savesAndReturnsTransaction() {
         Transaction transaction = transaction("45.00", TransactionType.EXPENSE);
+        User user = new User("demo@ledger.local", "not-used");
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(transactionRepository.save(transaction)).thenReturn(transaction);
 
-        Transaction result = transactionService.addTransaction(transaction);
+        Transaction result = transactionService.addTransaction(transaction, 1L);
 
         assertSame(transaction, result);
+        assertSame(user, transaction.getUser());
         verify(transactionRepository).save(transaction);
     }
 
@@ -61,34 +69,34 @@ class TransactionServiceTest {
                 transaction("100.00", TransactionType.INCOME)
         );
         Page<Transaction> expected = new PageImpl<>(transactions, pageable, 5);
-        when(transactionRepository.findAll(pageable)).thenReturn(expected);
+        when(transactionRepository.findByUserId(1L, pageable)).thenReturn(expected);
 
-        Page<Transaction> result = transactionService.getAllTransactions(pageable);
+        Page<Transaction> result = transactionService.getAllTransactions(pageable, 1L);
 
         assertEquals(transactions, result.getContent());
         assertEquals(1, result.getNumber());
         assertEquals(2, result.getSize());
         assertEquals(5, result.getTotalElements());
-        verify(transactionRepository).findAll(pageable);
+        verify(transactionRepository).findByUserId(1L, pageable);
     }
 
     @Test
     void getTransactionById_returnsTransactionWhenFound() {
         Transaction expected = transaction("45.00", TransactionType.EXPENSE);
-        when(transactionRepository.findById(1L)).thenReturn(Optional.of(expected));
+        when(transactionRepository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.of(expected));
 
-        Transaction actual = transactionService.getTransactionById(1L);
+        Transaction actual = transactionService.getTransactionById(1L, 1L);
 
         assertSame(expected, actual);
     }
 
     @Test
     void getTransactionById_throwsWhenNotFound() {
-        when(transactionRepository.findById(1L)).thenReturn(Optional.empty());
+        when(transactionRepository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.empty());
 
         assertThrows(
                 TransactionNotFoundException.class,
-                () -> transactionService.getTransactionById(1L)
+                () -> transactionService.getTransactionById(1L, 1L)
         );
     }
 
@@ -101,10 +109,10 @@ class TransactionServiceTest {
                 "Updated description",
                 LocalDate.of(2026, 2, 15)
         );
-        when(transactionRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(transactionRepository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.of(existing));
         when(transactionRepository.save(existing)).thenReturn(existing);
 
-        Transaction result = transactionService.updateTransaction(1L, updates);
+        Transaction result = transactionService.updateTransaction(1L, updates, 1L);
 
         assertSame(existing, result);
         assertEquals(new BigDecimal("125.50"), existing.getAmount());
@@ -117,76 +125,90 @@ class TransactionServiceTest {
     @Test
     void deleteTransaction_deletesTransactionWhenFound() {
         Transaction existing = transaction("45.00", TransactionType.EXPENSE);
-        when(transactionRepository.findById(1L)).thenReturn(Optional.of(existing));
+        when(transactionRepository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.of(existing));
 
-        transactionService.deleteTransaction(1L);
+        transactionService.deleteTransaction(1L, 1L);
 
         verify(transactionRepository).delete(existing);
     }
 
     @Test
     void deleteTransaction_throwsWhenNotFound() {
-        when(transactionRepository.findById(1L)).thenReturn(Optional.empty());
+        when(transactionRepository.findByIdAndUserId(1L, 1L)).thenReturn(Optional.empty());
 
         assertThrows(
                 TransactionNotFoundException.class,
-                () -> transactionService.deleteTransaction(1L)
+                () -> transactionService.deleteTransaction(1L, 1L)
         );
         verify(transactionRepository, never()).delete(any(Transaction.class));
     }
 
     @Test
     void getFinancialSummary_returnsZerosWhenThereAreNoTransactions() {
-        when(transactionRepository.sumAmountByType(TransactionType.INCOME)).thenReturn(null);
-        when(transactionRepository.sumAmountByType(TransactionType.EXPENSE)).thenReturn(null);
+        when(transactionRepository.sumAmountByType(TransactionType.INCOME, 1L)).thenReturn(null);
+        when(transactionRepository.sumAmountByType(TransactionType.EXPENSE, 1L)).thenReturn(null);
 
-        FinancialSummaryResponse summary = transactionService.getFinancialSummary();
+        FinancialSummaryResponse summary = transactionService.getFinancialSummary(1L);
 
-        assertEquals(BigDecimal.ZERO, summary.totalIncome());
-        assertEquals(BigDecimal.ZERO, summary.totalExpenses());
-        assertEquals(BigDecimal.ZERO, summary.balance());
+        assertEquals(new BigDecimal("0.00"), summary.totalIncome());
+        assertEquals(new BigDecimal("0.00"), summary.totalExpenses());
+        assertEquals(new BigDecimal("0.00"), summary.balance());
     }
 
     @Test
     void getFinancialSummary_sumsIncomeTransactions() {
-        when(transactionRepository.sumAmountByType(TransactionType.INCOME))
+        when(transactionRepository.sumAmountByType(TransactionType.INCOME, 1L))
                 .thenReturn(new BigDecimal("125.50"));
-        when(transactionRepository.sumAmountByType(TransactionType.EXPENSE))
+        when(transactionRepository.sumAmountByType(TransactionType.EXPENSE, 1L))
                 .thenReturn(null);
 
-        FinancialSummaryResponse summary = transactionService.getFinancialSummary();
+        FinancialSummaryResponse summary = transactionService.getFinancialSummary(1L);
 
         assertEquals(new BigDecimal("125.50"), summary.totalIncome());
-        assertEquals(BigDecimal.ZERO, summary.totalExpenses());
+        assertEquals(new BigDecimal("0.00"), summary.totalExpenses());
         assertEquals(new BigDecimal("125.50"), summary.balance());
     }
 
     @Test
     void getFinancialSummary_sumsExpenseTransactions() {
-        when(transactionRepository.sumAmountByType(TransactionType.INCOME))
+        when(transactionRepository.sumAmountByType(TransactionType.INCOME, 1L))
                 .thenReturn(null);
-        when(transactionRepository.sumAmountByType(TransactionType.EXPENSE))
+        when(transactionRepository.sumAmountByType(TransactionType.EXPENSE, 1L))
                 .thenReturn(new BigDecimal("42.50"));
 
-        FinancialSummaryResponse summary = transactionService.getFinancialSummary();
+        FinancialSummaryResponse summary = transactionService.getFinancialSummary(1L);
 
-        assertEquals(BigDecimal.ZERO, summary.totalIncome());
+        assertEquals(new BigDecimal("0.00"), summary.totalIncome());
         assertEquals(new BigDecimal("42.50"), summary.totalExpenses());
         assertEquals(new BigDecimal("-42.50"), summary.balance());
     }
 
     @Test
     void getFinancialSummary_subtractsExpensesFromIncome() {
-        when(transactionRepository.sumAmountByType(TransactionType.INCOME))
+        when(transactionRepository.sumAmountByType(TransactionType.INCOME, 1L))
                 .thenReturn(new BigDecimal("100.00"));
-        when(transactionRepository.sumAmountByType(TransactionType.EXPENSE))
+        when(transactionRepository.sumAmountByType(TransactionType.EXPENSE, 1L))
                 .thenReturn(new BigDecimal("30.00"));
 
-        FinancialSummaryResponse summary = transactionService.getFinancialSummary();
+        FinancialSummaryResponse summary = transactionService.getFinancialSummary(1L);
 
         assertEquals(new BigDecimal("100.00"), summary.totalIncome());
         assertEquals(new BigDecimal("30.00"), summary.totalExpenses());
         assertEquals(new BigDecimal("70.00"), summary.balance());
+    }
+
+    @Test
+    void getFinancialSummary_roundsFloatingPointSumsToCents() {
+        when(transactionRepository.sumAmountByType(TransactionType.INCOME, 1L))
+                .thenReturn(new BigDecimal("0.30000000000000004"));
+        when(transactionRepository.sumAmountByType(TransactionType.EXPENSE, 1L))
+                .thenReturn(new BigDecimal("0.1"));
+
+        FinancialSummaryResponse summary = transactionService.getFinancialSummary(1L);
+
+        assertEquals(new BigDecimal("0.30"), summary.totalIncome());
+        assertEquals(new BigDecimal("0.10"), summary.totalExpenses());
+        assertEquals(new BigDecimal("0.20"), summary.balance());
     }
 
     private Transaction transaction(String amount, TransactionType type) {
