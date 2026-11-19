@@ -1,0 +1,116 @@
+### Build output ###
+target/
+build/
+out/
+!**/src/main/**/target/
+!**/src/test/**/target/
+!**/src/main/**/build/
+!**/src/test/**/build/
+.mvn/wrapper/maven-wrapper.jar
+dist/
+HELP.md
+
+### IDE ###
+.idea/
+*.iml
+*.iws
+*.ipr
+.classpath
+.project
+.settings/
+.factorypath
+.apt_generated
+.sts4-cache
+.springBeans
+# Keep shared VS Code settings, ignore personal state
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+# NetBeans
+nbproject/private/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+### OS ###
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+Thumbs.db
+desktop.ini
+
+### Secrets & credentials ###
+# Environment files (keep a committed .env.example as a template)
+.env
+.env.*
+!.env.example
+*.env
+# Local/secret Spring profiles - put passwords, API keys, DB credentials here
+application-local.properties
+application-local.yml
+application-local.yaml
+application-dev.properties
+application-dev.yml
+application-prod.properties
+application-prod.yml
+application-secret*.properties
+application-secret*.yml
+secrets.properties
+secrets.yml
+secrets.yaml
+*.secret
+*.secrets
+credentials.json
+credentials*.json
+client_secret*.json
+service-account*.json
+# Keys, certificates, keystores
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.truststore
+*.crt
+*.cer
+id_rsa*
+id_ed25519*
+# Maven settings can contain repository passwords
+settings.xml
+settings-security.xml
+.npmrc
+.netrc
+# Claude Code local settings
+.claude/settings.local.json
+
+### Database / personal financial data ###
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*.sqlite-journal
+*.h2.db
+*.mv.db
+*.trace.db
+# Exports / backups of financial data
+*.csv
+*.xlsx
+*.xls
+*.ofx
+*.qfx
+*.qif
+*.bak
+*.dump
+*.sql.gz
+backups/
+exports/
+
+### Logs ###
+*.log
+logs/
+hs_err_pid*
+replay_pid*
